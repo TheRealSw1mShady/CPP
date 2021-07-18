@@ -8,12 +8,7 @@ CONFIG -= app_bundle
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-        main.cpp
-
-TRANSLATIONS += \
-    task1_ru_RU.ts
-CONFIG += lrelease
-CONFIG += embed_translations
+    task_2.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
