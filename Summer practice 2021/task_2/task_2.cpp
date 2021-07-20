@@ -25,14 +25,10 @@ int main()
     string short_str;                   // Строка для записи одного числа
     int pos;
     float max = 0;                          // Переменная под максимально число в строке
-    float max_channel;                  // Переменная под максимальное число в векторе vector_max
-    int len;
-    double sum = 0;
-    int max_vel;
 
     if (fin.is_open())
     {
-        cout << "File opened!" << endl;
+        cout << "File opened!" << endl; cout << endl;
         i = 0;
 
         // Чтение файла построчно:
@@ -62,48 +58,16 @@ int main()
                 str.erase(pos, 1);
             }
 
-            //qDebug() << str_float; cout << endl;
-
             i += 1;
 
             if (*max_element(str_float.begin(), str_float.end()) > max)
                 max = *max_element(str_float.begin(), str_float.end()); // Максимальный элемент в строке
-//            max = *max_element(str_float.begin(), str_float.end());
-//            vector_max.append(max);
 
             // Поиск индекса для каждого максимума
-
-            for (j = 0; j < str_float.length(); j += 1)
-            {
-                if (str_float[j] == max)
-                    max_vel = j;
-                    //vector_max_vel.append(j);
-            }
 
             short_str = "";
             str_float.clear();
         }
-
-        cout << max << endl;
-        cout << "Velocity channel of MAX = " << max_vel << endl;
-
-//        cout << endl;
-//        qDebug() << vector_max; cout << endl;
-//        cout << endl;
-//        qDebug() << vector_max_vel; cout << endl;
-
-//        max_channel = *max_element(vector_max.begin(), vector_max.end());   // Максимальный элемент матрицы
-//        len = vector_max.length();
-
-//        // Среднее арифметическое всех максимумов
-
-//        for (i = 0; i < len; i += 1)
-//            sum += vector_max[i];
-//        float SA = sum/i;
-
-//        cout << "SA = " << SA << endl;
-//        cout << "Porog = " << SA - 0.045*max_channel << endl;
-//        cout << endl;
 
         // Вывод каналов
 
@@ -111,6 +75,10 @@ int main()
         fin.open("C:\\Users\\Dmitriy\\Desktop\\zad2\\MDV.txt");
 
         i = 0;
+        float porog = 0.7 * max;
+        QVector <short> range;
+        QVector <short> velocity;
+        QVector <float> amplitude;
 
         while (!fin.eof())
         {
@@ -137,41 +105,85 @@ int main()
                 str.erase(pos, 1);
             }
 
-            //qDebug() << str_float; cout << endl;
-
-
             len = str_float.length();
 
-            float a = 0;
+            // Цикл для отбора пиков в строке
+
             for (j = 0; j < len; j += 1)
             {
-                max_channel = *max_element(str_float.begin(), str_float.end());
-                if (j == 0)
-                    a = str_float[j];
-                else
-                    if ((max_channel >= 0.7*max) && (a < str_float[j]) && (str_float[j] < max_channel))
+                if (j + 1 < len)
+                {
+                    if (str_float[j] > porog)
                     {
-                        str_float[j] = 0;
+                        range.append(i);
+                        velocity.append(j);
+                        amplitude.append(str_float[j]);
+                        if ((str_float[j+1] > porog) && (str_float[j+1] < str_float[j]))
+                        {
+                            str_float[j+1] = 0.0;
+                        }
                     }
-
-                    if ((max_channel >= 0.7*max) && (str_float[j] == max_channel))
-                    {
-                            cout << "Range channel = " << i << ", Velocity channel = " << j << ", Amplitude = " << str_float[j] << endl;
-                            str_float[j] = 0;
-                            if (j != len - 1)
-                                str_float[j+1] = 0;
-                            j = 0;
-                    }
-                    if ((max_channel >= 0.7*max) && (max_channel > a >  str_float[j]))
-                            str_float[j] = 0;
-                    a = str_float[j];
-
+                }
             }
-
             short_str = "";
             str_float.clear();
             i += 1;
         }
+        short len = velocity.length();
+
+        //qDebug() << range;
+        //qDebug() << velocity;
+        //qDebug() << amplitude;
+
+        // Цикл для отсеивания "целей" из соседних каналов с меньшей амплитудой
+
+        i = 0;
+        short j;
+        while (i < len)
+        {
+            if (i + 1 == len)
+                break;
+            j = i + 1;
+            while (j < len)
+            {
+                if ((velocity[i] == velocity[j]) || (velocity[i] == velocity[j] - 1)|| (velocity[i] == velocity[j] + 1))
+                {
+                    if ((range[i] == range[j]) || (range[i] == range[j] - 1)|| (range[i] == range[j] + 1))
+                    {
+                        if (amplitude[i] > amplitude[j])
+                        {
+                            velocity.remove(j);
+                            range.remove(j);
+                            amplitude.remove(j);
+                            i = -1;
+                            break;
+                        }
+                        else
+                        {
+                            velocity.remove(i);
+                            range.remove(i);
+                            amplitude.remove(i);
+                            i = -1;
+                            break;
+                        }
+                    }
+                }
+                j += 1;
+            }
+            len = velocity.length();
+            i += 1;
+        }
+
+        //cout << endl;
+        for (i = 0; i < len; i += 1)
+        {
+            cout << i << ") Range channel = " << range[i] << ", Velocity channel = " << velocity[i] << endl;
+        }
+        //cout << endl;
+        //qDebug() << range;
+        //qDebug() << velocity;
+        //qDebug() << amplitude;
+
     }
     else
         cout << "File not found." << endl;
