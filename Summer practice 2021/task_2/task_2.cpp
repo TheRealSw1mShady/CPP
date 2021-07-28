@@ -63,13 +63,10 @@ int main()
             if (*max_element(str_float.begin(), str_float.end()) > max)
                 max = *max_element(str_float.begin(), str_float.end()); // Максимальный элемент в строке
 
-            // Поиск индекса для каждого максимума
-
             short_str = "";
             str_float.clear();
         }
 
-        // Вывод каналов
 
         fin.close();
         fin.open("C:\\Users\\Dmitriy\\Desktop\\zad2\\MDV.txt");

@@ -44,7 +44,7 @@ void parametrs(float Fmin = 40000, float Fmax = 200000)
         spisok_F.append(F);
 
         int N = ot;                                       //количество отсчетов на свободное пространство
-        int n = N/s;                                      //количество отсчетов в испульсе
+        int n = N/s;                                      //количество отсчетов в импульсе
 
         spisok_n.append(n);
         spisok_N.append(N);
@@ -74,7 +74,7 @@ int main()
 
     parametrs();
 
-    int index = 5;
+    int index = 10;
     float F = spisok_F[index];
     float Fdop = fabs(-2 * V/lambda);
 
