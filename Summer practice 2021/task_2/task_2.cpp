@@ -15,8 +15,6 @@ using namespace std;
 int main()
 {
     QVector <float> str_float;          // Вектор строки с числами
-    QVector <float> vector_max;         // Вектор с максимальными значениями из каждой строки
-    QVector <float> vector_max_vel;     // Вектор с индексами максимальных значений каждой строки
     ifstream fin;
     fin.open("C:\\Users\\Dmitriy\\Desktop\\zad2\\MDV.txt");
 
