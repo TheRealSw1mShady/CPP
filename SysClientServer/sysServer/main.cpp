@@ -6,11 +6,12 @@
 #include <chrono>
 
 using namespace std;
+string hexToIp(uint32_t value);
 
 int main()
 {
     int clientSock, serverSock;
-    struct sockaddr_in addr;
+    sockaddr_in servAddr, clientAddr;
     char buf[1024];
     int bytes_read;
 
@@ -18,30 +19,37 @@ int main()
 
     if(serverSock < 0)
     {
-        perror("socket");
-        exit(1);
+        cout << "Socket error!";
+        return 0;
     }
 
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(10050);
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servAddr.sin_family = AF_INET;
+    servAddr.sin_port = htons(10050);
+    servAddr.sin_addr.s_addr = htonl(0x7F000001); // INADDR_ANY
 
-    if (bind(serverSock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0)
+
+    // clientAddr.sin_family = AF_INET;
+    // clientAddr.sin_port = htons(8888);
+    // clientAddr.sin_addr.s_addr = htonl(0);
+
+    if (bind(serverSock, reinterpret_cast<sockaddr*>(&servAddr), sizeof(servAddr)) < 0)
     {
-        cout << "Bind error!";
+        cout << "Binding error!";
         return 0;
     }
     else
-        cout << "Successfully binded to IP " << addr.sin_port << " and port " << addr.sin_addr.s_addr << endl;
+        cout << "Successfully binded to IP " << hexToIp(htonl(servAddr.sin_addr.s_addr)) <<
+        " and port " << htons(servAddr.sin_port) << endl;
 
     listen(serverSock, 1);
 
-    clientSock = accept(serverSock, NULL, NULL);
+    socklen_t size = sizeof(clientAddr);
+    clientSock = accept(serverSock, (sockaddr *)&clientAddr, &size);
 
 
     if (clientSock < 0)
     {
-        cout << "Bind error!";
+        cout << "Acception error!";
         return 0;
     }
 
@@ -51,6 +59,8 @@ int main()
         if (bytes_read <= 0)
             break;
 
+        cout << "Client IP: " << hexToIp(ntohl(clientAddr.sin_addr.s_addr)) <<
+                ", client port: " << ntohs(clientAddr.sin_port) << endl;
         cout << buf;
 
         time_t currTime = time(nullptr);
@@ -67,4 +77,12 @@ int main()
     close(clientSock);
 
     return 0;
+}
+
+string hexToIp(uint32_t value)
+{
+   return to_string(static_cast<int>(value >> 24)) + "." +
+            to_string(static_cast<int>((value & 0x00FF0000) >> 16)) + "." +
+            to_string(static_cast<int>((value & 0x0000FF00) >> 8)) + "." +
+            to_string(static_cast<int>(value & 0x000000FF));
 }
