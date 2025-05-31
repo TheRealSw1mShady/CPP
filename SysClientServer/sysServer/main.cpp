@@ -4,18 +4,26 @@
 #include <unistd.h>
 #include <iostream>
 #include <chrono>
+#include <arpa/inet.h>
 
 using namespace std;
 string hexToIp(uint32_t value);
+void sendData(int sock);
 
 int main()
 {
     int clientSock, serverSock;
     sockaddr_in servAddr, clientAddr;
-    char buf[1024];
+    char buf[100];
     int bytes_read;
 
     serverSock = socket(AF_INET, SOCK_STREAM, 0);
+
+    /* Отключение TIME_WAIT, чтобы сервер не держал сокет
+     * клиента занятым некоторое время после отключения клиента */
+    int reuse = 1;
+    setsockopt(serverSock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+    setsockopt(clientSock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
 
     if(serverSock < 0)
     {
@@ -23,14 +31,13 @@ int main()
         return 0;
     }
 
+    char address[] = {127, 0, 0, 1};
     servAddr.sin_family = AF_INET;
     servAddr.sin_port = htons(10050);
-    servAddr.sin_addr.s_addr = htonl(0x7F000001); // INADDR_ANY
 
-
-    // clientAddr.sin_family = AF_INET;
-    // clientAddr.sin_port = htons(8888);
-    // clientAddr.sin_addr.s_addr = htonl(0);
+    /* Функция перевода ASCII в двоичный формат. Удобство ввода адреса */
+    inet_pton(AF_INET, address,  &servAddr.sin_addr.s_addr);
+    //servAddr.sin_addr.s_addr = htonl(0x7F000001); // INADDR_ANY
 
     if (bind(serverSock, reinterpret_cast<sockaddr*>(&servAddr), sizeof(servAddr)) < 0)
     {
@@ -46,32 +53,34 @@ int main()
     socklen_t size = sizeof(clientAddr);
     clientSock = accept(serverSock, (sockaddr *)&clientAddr, &size);
 
-
     if (clientSock < 0)
     {
         cout << "Acception error!";
         return 0;
     }
 
+    cout << "Client IP: " << hexToIp(ntohl(clientAddr.sin_addr.s_addr)) <<
+            ", client port: " << ntohs(clientAddr.sin_port) << endl;
+
+    bytes_read = recv(clientSock, buf, 100, 0);
+//    if (bytes_read <= 0)
+//        break;
+
+    cout << buf;
+
+    time_t currTime = time(nullptr);
+    string strTime = asctime(localtime(&currTime));
+    char dateArray[strTime.length()];
+
     while (true)
     {
-        bytes_read = recv(clientSock, buf, 1024, 0);
-        if (bytes_read <= 0)
-            break;
-
-        cout << "Client IP: " << hexToIp(ntohl(clientAddr.sin_addr.s_addr)) <<
-                ", client port: " << ntohs(clientAddr.sin_port) << endl;
-        cout << buf;
-
-        time_t currTime = time(nullptr);
-        string strTime = asctime(localtime(&currTime));
-
-        char dateArray[strTime.length() + 1];
-        dateArray[strTime.length() + 1] = '\0';
+        currTime = time(nullptr);
+        strTime = asctime(localtime(&currTime));
 
         for (int n = 0; n < strTime.length(); n++)
             dateArray[n] = strTime[n];
         send(clientSock, dateArray, sizeof(dateArray), 0);
+        sleep(1);
     }
 
     close(clientSock);

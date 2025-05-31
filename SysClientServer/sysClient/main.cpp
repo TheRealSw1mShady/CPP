@@ -53,8 +53,8 @@ int main()
     while (true)
     {
         bytes_read = recv(sock, buffer, 1024, 0);
+        buffer[bytes_read] = 0;     // завершающий нуль
         cout << buffer;
-        break;
     }
 
     close(sock);
