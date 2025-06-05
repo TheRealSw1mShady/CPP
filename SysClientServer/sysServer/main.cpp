@@ -8,7 +8,6 @@
 
 using namespace std;
 string hexToIp(uint32_t value);
-void sendData(int sock);
 
 int main()
 {
@@ -36,8 +35,9 @@ int main()
     servAddr.sin_port = htons(10050);
 
     /* Функция перевода ASCII в двоичный формат. Удобство ввода адреса */
-    inet_pton(AF_INET, address,  &servAddr.sin_addr.s_addr);
+    //inet_pton(AF_INET, address,  &servAddr.sin_addr.s_addr);
     //servAddr.sin_addr.s_addr = htonl(0x7F000001); // INADDR_ANY
+    servAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     if (bind(serverSock, reinterpret_cast<sockaddr*>(&servAddr), sizeof(servAddr)) < 0)
     {
