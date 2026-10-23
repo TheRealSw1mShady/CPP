@@ -10,4 +10,4 @@ project (noiseFilter
 	LANGUAGES CXX)
 
 # This project will output an executable file
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} main.cpp generator.cpp filter.cpp)
